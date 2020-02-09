@@ -204,21 +204,21 @@ bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& c )
     h |= uint32_t( quad_rank ) << 16;
     _fill_kickers( h, kickers, kickers_count, 1, 12, quad_rank, quad_rank );
     if( cpDesc )
-      sprintf( cpDesc, "%s quads", LongRankName[quad_rank] );
+      sprintf( cpDesc, "Quad %ss", LongRankName[quad_rank] );
     ret = true;
   } else if (( -1 != trip_rank ) && ( -1 != mxpair_rank )){
     h = VALUE_BOAT;
     h |= uint32_t(trip_rank) << 16;
     h |= uint32_t(mxpair_rank) << 12;
     if( cpDesc )
-      sprintf( cpDesc, "%s full of %s", LongRankName[trip_rank], LongRankName[mxpair_rank]);
+      sprintf( cpDesc, "%ss full of %ss", LongRankName[trip_rank], LongRankName[mxpair_rank]);
     ret = true;
   } else if ( -1 != trip_rank ) {
     h = VALUE_THREE_OF_KIND;
     h |= uint32_t(trip_rank) << 16;
     _fill_kickers( h, kickers, kickers_count, 2, 12, trip_rank, trip_rank );
     if( cpDesc )
-      sprintf( cpDesc, "%s three of a kind", LongRankName[trip_rank]);
+      sprintf( cpDesc, "Three of a kind, %ss", LongRankName[trip_rank]);
     ret = true;
   } else if( (-1 != mxpair_rank ) && (-1 != mnpair_rank )) {
     h = VALUE_TWO_PAIR;
@@ -226,14 +226,14 @@ bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& c )
     h |= uint32_t(mnpair_rank) << 12;
     _fill_kickers( h, kickers, kickers_count, 1, 8, trip_rank, trip_rank );
     if( cpDesc )
-      sprintf( cpDesc, "%s over %s", LongRankName[mxpair_rank], LongRankName[mnpair_rank]);
+      sprintf( cpDesc, "%ss over %ss", LongRankName[mxpair_rank], LongRankName[mnpair_rank]);
     ret = true;
   } else if( -1 != mxpair_rank ){
     h = VALUE_ONE_PAIR;
     h |= uint32_t(mxpair_rank) << 16;
     _fill_kickers( h, kickers, kickers_count, 3, 12, mxpair_rank, mxpair_rank );
     if( cpDesc )
-      sprintf( cpDesc, "%s pair", LongRankName[mxpair_rank]);
+      sprintf( cpDesc, "Pair of %ss", LongRankName[mxpair_rank]);
     ret = true;
   } else {
     h = VALUE_HIGH_CARD;
@@ -268,7 +268,7 @@ bool is_a_straight_flush( HandValue& h, char *cpDesc, const CardSet& c )
     if( tmpb && ( tmph > h ))
     {
       if( cpDesc )
-        sprintf( cpDesc, "straight flush");
+        sprintf( cpDesc, "Straight flush");
       ret = true;
       h = tmph;
     }
