@@ -1,8 +1,7 @@
 #include "evaluator.h"
 
 #include <cassert>
-#include <cstdio> // sprintf()
-#include <cstring>
+#include <string>
 
 // (1 << 20)  high card
 #define VALUE_HIGH_CARD       (1ULL << 20)
@@ -24,7 +23,7 @@
 #define VALUE_STRAIGHT_FLUSH  (9ULL << 20)
 
 
-bool is_a_straight( HandValue& h, char *cpDesc, const CardSet& c )
+bool is_a_straight( HandValue& h, std::string *cpDesc, const CardSet& c )
 {
     const uint64_t rankfilter( 0x0F );
 
@@ -54,7 +53,7 @@ bool is_a_straight( HandValue& h, char *cpDesc, const CardSet& c )
           to_rank_suit( kickerrank, kickersuit, ( word & (rankfilter << ( rank   <<2))) );
           if( cpDesc )
           {
-              sprintf( cpDesc, "%s high straight", LongRankName[kickerrank] );
+              *cpDesc = std::string(LongRankName[kickerrank]) + " high straight";
           }
           assert( kickerrank < 16 );
           h |= kickerrank << 16;
@@ -68,7 +67,7 @@ bool is_a_straight( HandValue& h, char *cpDesc, const CardSet& c )
 }
 
 
-bool is_a_flush( HandValue& h, char *cpDesc, const CardSet& c )
+bool is_a_flush( HandValue& h, std::string *cpDesc, const CardSet& c )
 {
   const uint64_t suitfilter( 0x011111111111111 );
 
@@ -96,7 +95,7 @@ bool is_a_flush( HandValue& h, char *cpDesc, const CardSet& c )
       h |= kickerrank << 16;
       word ^= from_rank_suit( kickerrank, kickersuit ); // turn bit off
       if( cpDesc )
-        sprintf( cpDesc, "%s high flush", LongRankName[kickerrank] );
+        *cpDesc = std::string(LongRankName[kickerrank]) + " high flush";
 
       to_rank_suit( kickerrank, kickersuit, word );
       h |= kickerrank << 12;
@@ -146,7 +145,7 @@ void _fill_kickers(
   return;
 }
 
-bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& c )
+bool is_a_pairing( HandValue& h, std::string *cpDesc, const CardSet& c )
 {
   const uint8_t rank_count[]={ 0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
   uint8_t kickers[14];
@@ -204,42 +203,42 @@ bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& c )
     h |= uint32_t( quad_rank ) << 16;
     _fill_kickers( h, kickers, kickers_count, 1, 12, quad_rank, quad_rank );
     if( cpDesc )
-      sprintf( cpDesc, "Quad %ss", LongRankName[quad_rank] );
+      *cpDesc = std::string("Quad ") + LongRankName[quad_rank] + "s";
     ret = true;
   } else if (( -1 != trip_rank ) && ( -1 != mxpair_rank )){
     h = VALUE_BOAT;
     h |= uint32_t(trip_rank) << 16;
     h |= uint32_t(mxpair_rank) << 12;
     if( cpDesc )
-      sprintf( cpDesc, "%ss full of %ss", LongRankName[trip_rank], LongRankName[mxpair_rank]);
+      *cpDesc = std::string(LongRankName[trip_rank]) + "s full of " + LongRankName[mxpair_rank] + "s";
     ret = true;
   } else if ( -1 != trip_rank ) {
     h = VALUE_THREE_OF_KIND;
     h |= uint32_t(trip_rank) << 16;
     _fill_kickers( h, kickers, kickers_count, 2, 12, trip_rank, trip_rank );
     if( cpDesc )
-      sprintf( cpDesc, "Three of a kind, %ss", LongRankName[trip_rank]);
+      *cpDesc = std::string("Three of a kind, ") + LongRankName[trip_rank] + "s";
     ret = true;
   } else if( (-1 != mxpair_rank ) && (-1 != mnpair_rank )) {
     h = VALUE_TWO_PAIR;
     h |= uint32_t(mxpair_rank) << 16;
     h |= uint32_t(mnpair_rank) << 12;
-    _fill_kickers( h, kickers, kickers_count, 1, 8, trip_rank, trip_rank );
+    _fill_kickers( h, kickers, kickers_count, 1, 8, mxpair_rank, mnpair_rank );
     if( cpDesc )
-      sprintf( cpDesc, "%ss over %ss", LongRankName[mxpair_rank], LongRankName[mnpair_rank]);
+      *cpDesc = std::string(LongRankName[mxpair_rank]) + "s over " + LongRankName[mnpair_rank] + "s";
     ret = true;
   } else if( -1 != mxpair_rank ){
     h = VALUE_ONE_PAIR;
     h |= uint32_t(mxpair_rank) << 16;
     _fill_kickers( h, kickers, kickers_count, 3, 12, mxpair_rank, mxpair_rank );
     if( cpDesc )
-      sprintf( cpDesc, "Pair of %ss", LongRankName[mxpair_rank]);
+      *cpDesc = std::string("Pair of ") + LongRankName[mxpair_rank] + "s";
     ret = true;
   } else {
     h = VALUE_HIGH_CARD;
     _fill_kickers( h, kickers, kickers_count, 5, 16, 255, 255 );
     if( cpDesc )
-      sprintf( cpDesc, "%s high", LongRankName[kickers[0]]);
+      *cpDesc = std::string(LongRankName[kickers[0]]) + " high";
     ret = true;
   }
 
@@ -250,7 +249,7 @@ bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& c )
 
 
 
-bool is_a_straight_flush( HandValue& h, char *cpDesc, const CardSet& c )
+bool is_a_straight_flush( HandValue& h, std::string *cpDesc, const CardSet& c )
 {
   const uint64_t suitfilter( 0x011111111111111 );
 
@@ -259,16 +258,16 @@ bool is_a_straight_flush( HandValue& h, char *cpDesc, const CardSet& c )
   bool ret = false;
 
   int8_t suit=4;
-  while( --suit )
+  while( suit-- ) // checks suits 3..0, including clubs
   {
-    char tmpcp[64];
+    std::string tmpcp;
     HandValue tmph;
-    bool tmpb = is_a_straight( tmph, cpDesc ? tmpcp : 0, c & (suitfilter << suit) );
+    bool tmpb = is_a_straight( tmph, cpDesc ? &tmpcp : 0, c & (suitfilter << suit) );
 
     if( tmpb && ( tmph > h ))
     {
       if( cpDesc )
-        sprintf( cpDesc, "Straight flush");
+        *cpDesc = "Straight flush";
       ret = true;
       h = tmph;
     }
@@ -287,46 +286,46 @@ bool is_a_straight_flush( HandValue& h, char *cpDesc, const CardSet& c )
 // ==============================================
 
 HandValue
-StdHandEvaluator::value( CardSet hand, char *cpDesc ){
+StdHandEvaluator::value( CardSet hand, std::string *cpDesc ){
   HandValue ret(0);
 
   HandValue hStraight(0);
-  char cpStraight[32];
-  bool bStraight = is_a_straight(hStraight, cpStraight, hand);
+  std::string cpStraight;
+  bool bStraight = is_a_straight(hStraight, &cpStraight, hand);
   if(hStraight > ret){
     ret = hStraight;
     if( cpDesc )
-      strcpy(cpDesc, cpStraight);
+      *cpDesc = cpStraight;
   }
 
   HandValue hFlush(0);
-  char cpFlush[32];
-  bool bFlush = is_a_flush(hFlush, cpFlush, hand);
+  std::string cpFlush;
+  bool bFlush = is_a_flush(hFlush, &cpFlush, hand);
   if(hFlush > ret){
     ret = hFlush;
     if( cpDesc )
-      strcpy(cpDesc, cpFlush);
+      *cpDesc = cpFlush;
   }
 
   HandValue hPairing(0);
-  char cpPairing[32];
-  bool bPairing = is_a_pairing(hPairing, cpPairing, hand);
+  std::string cpPairing;
+  bool bPairing = is_a_pairing(hPairing, &cpPairing, hand);
   if(hPairing > ret){
     ret = hPairing;
     if( cpDesc )
-      strcpy(cpDesc, cpPairing);
+      *cpDesc = cpPairing;
   }
 
   HandValue hStraightFlush(0);
-  char cpStraightFlush[32];
+  std::string cpStraightFlush;
   bool bStraightFlush = false;
   if( bFlush && bStraight ){
-    bStraightFlush = is_a_straight_flush(hStraightFlush, cpStraightFlush, hand);
+    bStraightFlush = is_a_straight_flush(hStraightFlush, &cpStraightFlush, hand);
   }
   if(hStraightFlush > ret){
     ret = hStraightFlush;
     if( cpDesc )
-      strcpy(cpDesc, cpStraightFlush);
+      *cpDesc = cpStraightFlush;
   }
 
   return ret;
