@@ -49,8 +49,7 @@ void time_hands(StdHandEvaluator& heval, unsigned howmany) {
 
 
 void show_hands(StdHandEvaluator& heval) {
-  char cpBuffer[32];
-  std::string s;
+  std::string s, sDesc;
   std::uniform_int_distribution<uint8_t> picker(0,51);
   std::default_random_engine generator (1776);
 
@@ -66,9 +65,9 @@ void show_hands(StdHandEvaluator& heval) {
     }
 
     print_hand(s, c);
-    HandValue h = heval.value(c, cpBuffer);
+    HandValue h = heval.value(c, &sDesc);
 
-    std::cout << '(' << i << ")  " << s << "  [" << cpBuffer << ']' << '\t' << uint32_t(h) << std::endl;
+    std::cout << '(' << i << ")  " << s << "  [" << sDesc << ']' << '\t' << uint32_t(h) << std::endl;
   }
 
   return;

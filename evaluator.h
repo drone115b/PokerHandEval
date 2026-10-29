@@ -2,6 +2,7 @@
 #define EVALUATORHEADER
 
 #include <cstdint>
+#include <string>
 #include "card.h"
 
 typedef uint32_t HandValue;
@@ -29,7 +30,7 @@ class HandEvaluator {
 public:
 
   virtual HandValue
-  value( CardSet hand, char *cpDesc ) = 0;
+  value( CardSet hand, std::string *cpDesc ) = 0;
 
 };
 
@@ -38,14 +39,14 @@ class StdHandEvaluator : public HandEvaluator {
 public:
 
   HandValue
-  value( CardSet hand, char *cpDesc );
+  value( CardSet hand, std::string *cpDesc );
 
 };
 
 
-bool is_a_straight( HandValue& h, char *cpDesc, const CardSet& );
-bool is_a_flush( HandValue& h, char *cpDesc, const CardSet& );
-bool is_a_pairing( HandValue& h, char *cpDesc, const CardSet& );
-bool is_a_straight_flush( HandValue& h, char *cpDesc, const CardSet& );
+bool is_a_straight( HandValue& h, std::string *cpDesc, const CardSet& );
+bool is_a_flush( HandValue& h, std::string *cpDesc, const CardSet& );
+bool is_a_pairing( HandValue& h, std::string *cpDesc, const CardSet& );
+bool is_a_straight_flush( HandValue& h, std::string *cpDesc, const CardSet& );
 
 #endif
